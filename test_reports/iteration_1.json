@@ -1,0 +1,38 @@
+{
+  "summary": "Latur Tahari House end-to-end testing complete. Backend: 18/18 pytest tests PASS covering tables, OTP send/verify, menu, orders (multi-round + round_no), active session, request-bill, admin login, live queue, order status transitions (received→preparing→ready→completed), loyalty credit (1pt/₹10), admin stats/today (total_orders, revenue, best_sellers, avg_turn_minutes, active_tables), product availability toggle removing item from public /api/menu, admin table CRUD, and _id absence from every JSON payload. Frontend (Expo web preview @ 390x844): full customer journey works — landing hero + 20 table chips, table→OTP screen with badge, phone→send OTP→enter 123456→verify→routes to /menu; menu renders category chips + Popular default + veg dot + '+ ADD'; item detail shows 3 spice pills + qty stepper; add to cart shows FAB; cart→SEND TO KITCHEN→tracking screen with RECEIVED pill, session total, Add More + Request Bill buttons; live status bar reappears on menu. Admin: /admin/login → queue shows the two active sessions with rounds, Bill Requested red banner visible for the customer who tapped Request Bill; MARK PREPARING advances orders; /admin/menu shows 24 products with toggle popular/available and edit modal; /admin/tables lists tables with real QR code image in modal (verified visually); /admin/sales shows Orders=3, Revenue=₹1300, best seller Buff Tahari; /admin/customers shows both test users with correct phone, order_count, and loyalty points (TEST_User: 2 orders, 52 pts; Guest 3210: 1 order, 0 pts). No red-screen errors, no deprecated Expo packages (expo-av/expo-barcode-scanner/expo-background-fetch absent). One minor React DevTools warning about controlled→uncontrolled input in admin edit-product modal (non-blocking). Data-pollution note: initial pytest run needed a one-time DB clean because prior stray open sessions on the same table_id caused the non-deterministic find_one to pick the wrong session for /sessions/active/{table_id} — after cleanup all tests are green.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/sessions/active/{table_id}", "issue": "Uses find_one on {table_id, status:open} — if data ever contains >1 open session for the same table (edge case, admin didn't close previous session before a new user scanned) Mongo may return an arbitrary one. Consider sorting by opened_at desc or preventing multiple open sessions per table with a unique index."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "admin/menu.tsx edit modal", "issue": "TextInput uses value={editing?.name} which becomes undefined when modal is closed, producing React warning 'A component is changing a controlled input to be uncontrolled'. Use value={editing?.name ?? ''} on all edit-modal TextInputs (name, price, description).", "testID": "edit-name", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "landing", "issues": ["'shadow*' style props deprecated warning from react-native-web. Consider migrating to boxShadow or accept as non-blocking web-only warning."]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_latur_backend.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Fix controlled/uncontrolled TextInput warning in /app/frontend/app/admin/menu.tsx (edit modal): change value={editing?.name} etc. to value={editing?.name ?? ''} for name/price/description fields.",
+    "(Optional) Harden GET /api/sessions/active/{table_id} to sort by opened_at desc or enforce a single open session per table_id via a partial unique index so a stray old open session never leaks into a new customer view."
+  ],
+  "critical_code_review_comments": [
+    "server.py is ~600 lines and still readable; if it grows further consider splitting into routers/auth.py, routers/orders.py, routers/admin.py.",
+    "All Mongo queries correctly project out _id via projection {'_id': 0}. No ObjectId leakage detected in any response.",
+    "Loyalty credit uses int(subtotal // 10) which floors correctly; verified 520 → 52 pts.",
+    "Bearer token auth is a simple UUID lookup — acceptable for MVP; note there is no token expiry/rotation.",
+    "Frontend uses process.env.EXPO_PUBLIC_BACKEND_URL via src/api.ts (verified indirectly by all API calls landing on the correct host)."
+  ],
+  "updated_files": ["/app/backend/tests/test_latur_backend.py (new)"],
+  "success_rate": {"backend": "100% (18/18)", "frontend": "100% of tested flows (20/20 assertions)"},
+  "seed_data_creation": "Cleared table_sessions/orders/sessions/users/admin_sessions once at the start of testing to remove stale data from a prior run; app auto-reseeded admin+tables+24 products via startup hook. Tests then created 1 customer (9876543210 → Guest 3210) and 1 admin-facing test user (TEST_User) with 3 orders total.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend contract is stable and pytest suite at /app/backend/tests/test_latur_backend.py can be re-run as regression. If tests are re-run without clearing DB, TestAdminTables adds one new table each run — safe but tables count creeps up. If a prior open session lingers on the same table, TestOrders.test_active_session_with_rounds may flake due to non-deterministic find_one — clear table_sessions/orders/users/sessions before re-run for a clean baseline.",
+  "rca_of_issue": "Initial flake in test_active_session_with_rounds RCA: server.py :278 GET /api/sessions/active/{table_id} does db.table_sessions.find_one({table_id, status: open}) with no ordering. When multiple 'open' sessions exist for one table_id (which happens if a previous customer never had their session closed and a new customer scans the same table — verify-otp reuses an existing open one, but after full DB collections were retained across runs there were multiple), Mongo may return either. The place-order path uses the same find_one so orders CAN land on session A while active-session shows session B. Mitigation: enforce a single open session per table (partial unique index on {table_id: 1} where status='open'), and/or add .sort('opened_at', -1) to the find_one calls. In a real deployment, admin 'Close Table' after payment prevents this, so real risk is low but the DB integrity guard is worth adding."
+}
