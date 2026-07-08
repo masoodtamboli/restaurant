@@ -121,11 +121,11 @@ export default function AdminMenu() {
               <Pressable onPress={() => setEditing(null)} testID="close-edit"><Feather name="x" size={22} color={colors.onSurface} /></Pressable>
             </View>
             <ScrollView>
-              <TextInput placeholder="Name" value={editing?.name} onChangeText={(v) => setEditing({ ...editing, name: v })} style={styles.input} testID="edit-name" />
-              <TextInput placeholder="Category" value={editing?.category} onChangeText={(v) => setEditing({ ...editing, category: v })} style={styles.input} testID="edit-category" />
-              <TextInput placeholder="Price (₹)" value={String(editing?.price || "")} keyboardType="numeric" onChangeText={(v) => setEditing({ ...editing, price: v })} style={styles.input} testID="edit-price" />
-              <TextInput placeholder="Description" value={editing?.description} multiline onChangeText={(v) => setEditing({ ...editing, description: v })} style={[styles.input, { height: 80 }]} testID="edit-desc" />
-              <TextInput placeholder="Image URL" value={editing?.image_url} onChangeText={(v) => setEditing({ ...editing, image_url: v })} style={styles.input} testID="edit-image" />
+              <TextInput placeholder="Name" value={editing?.name ?? ""} onChangeText={(v) => setEditing({ ...editing, name: v })} style={styles.input} testID="edit-name" />
+              <TextInput placeholder="Category" value={editing?.category ?? ""} onChangeText={(v) => setEditing({ ...editing, category: v })} style={styles.input} testID="edit-category" />
+              <TextInput placeholder="Price (₹)" value={String(editing?.price ?? "")} keyboardType="numeric" onChangeText={(v) => setEditing({ ...editing, price: v })} style={styles.input} testID="edit-price" />
+              <TextInput placeholder="Description" value={editing?.description ?? ""} multiline onChangeText={(v) => setEditing({ ...editing, description: v })} style={[styles.input, { height: 80 }]} testID="edit-desc" />
+              <TextInput placeholder="Image URL" value={editing?.image_url ?? ""} onChangeText={(v) => setEditing({ ...editing, image_url: v })} style={styles.input} testID="edit-image" />
               <View style={styles.togRow}>
                 <Pressable style={[styles.checkBtn, editing?.is_veg && { backgroundColor: colors.success }]} onPress={() => setEditing({ ...editing, is_veg: !editing?.is_veg })} testID="edit-veg">
                   <Text style={[styles.checkTxt, editing?.is_veg && { color: colors.onBrand }]}>VEG</Text>

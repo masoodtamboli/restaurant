@@ -142,7 +142,7 @@ async def verify_otp(inp: VerifyOTPIn):
 
     # Get or create open session for this table
     session = await db.table_sessions.find_one(
-        {"table_id": inp.table_id, "status": "open"}, {"_id": 0}
+        {"table_id": inp.table_id, "status": "open"}, {"_id": 0}, sort=[("opened_at", -1)]
     )
     if not session:
         session = {
@@ -223,7 +223,7 @@ async def list_tables_public():
 @api.post("/orders")
 async def place_order(inp: PlaceOrderIn, user=Depends(get_current_user)):
     session = await db.table_sessions.find_one(
-        {"table_id": inp.table_id, "status": "open"}, {"_id": 0}
+        {"table_id": inp.table_id, "status": "open"}, {"_id": 0}, sort=[("opened_at", -1)]
     )
     if not session:
         raise HTTPException(400, "No open session for this table")
@@ -277,7 +277,9 @@ async def place_order(inp: PlaceOrderIn, user=Depends(get_current_user)):
 @api.get("/sessions/active/{table_id}")
 async def active_session(table_id: str):
     session = await db.table_sessions.find_one(
-        {"table_id": table_id, "status": {"$in": ["open", "bill_requested"]}}, {"_id": 0}
+        {"table_id": table_id, "status": {"$in": ["open", "bill_requested"]}},
+        {"_id": 0},
+        sort=[("opened_at", -1)],
     )
     if not session:
         return {"session": None, "orders": []}
