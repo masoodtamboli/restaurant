@@ -1,0 +1,143 @@
+{
+  "app_name": "Latur Tahari House",
+  "personality": "8 Hand-Drawn / Journal (Custom Heritage Tactile)",
+  "personality_one_liner": "Old Deccani biryani house meets warm street food stall signage, rich in turmeric, charcoal, and brass plate nostalgia.",
+  "color": {
+    "surface": "#FDF6EC",
+    "onSurface": "#2B1810",
+    "surfaceSecondary": "#F5E8D3",
+    "onSurfaceSecondary": "#2B1810",
+    "surfaceTertiary": "#E8D5B5",
+    "onSurfaceTertiary": "#2B1810",
+    "surfaceInverse": "#2B1810",
+    "onSurfaceInverse": "#FDF6EC",
+    "brand": "#7A1F2B",
+    "brandPrimary": "#7A1F2B",
+    "onBrandPrimary": "#FDF6EC",
+    "brandSecondary": "#D4A017",
+    "onBrandSecondary": "#2B1810",
+    "brandTertiary": "#D4A017",
+    "onBrandTertiary": "#2B1810",
+    "success": "#3F7D4A",
+    "onSuccess": "#FFFFFF",
+    "warning": "#D4A017",
+    "onWarning": "#2B1810",
+    "error": "#B23A2E",
+    "onError": "#FFFFFF",
+    "info": "#2B1810",
+    "onInfo": "#FDF6EC",
+    "border": "#E8D5B5",
+    "borderStrong": "#2B1810",
+    "divider": "#E8D5B5"
+  },
+  "typography": {
+    "displayFontFamily": "Roboto Slab",
+    "textFontFamily": "Manrope",
+    "scale": { "sm": 12, "base": 14, "lg": 16, "xl": 20, "2xl": 24 }
+  },
+  "spacing": { 
+    "rule": "Generous vertical breathing room for menus, strict clustering for card metadata. Keep buttons slightly more padded (h:16, v:12) to feel substantial.", 
+    "xs": 4, "sm": 8, "md": 12, "lg": 16, "xl": 24, "2xl": 32, "3xl": 48 
+  },
+  "radius_tokens": { 
+    "sm": 4, 
+    "md": 12, 
+    "lg": 16, 
+    "pill": 999 
+  },
+  "shadow_tier": "1",
+  "navigation": "stack_only",
+  "icon_set": "Feather",
+  "glassmorphism": {
+    "enabled": false,
+    "do's": ["Use subtle textured grain overlaid as an image or Skia noise over solid cream cards to create depth instead of blur"],
+    "dont's": ["Do not use blur or glass effects. The app should feel like paper, painted wood, and brass, not digital iOS glass."]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "solid surfaceSecondary",
+      "android": "solid surfaceSecondary",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "none",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    { 
+      "name": "QR / OTP Login", 
+      "purpose": "Secure a table binding with phone login.", 
+      "states": { 
+        "loading": "Centered spinner matching brandPrimary", 
+        "empty": "N/A", 
+        "error": "Muted Red toast or block at the top" 
+      }, 
+      "layout": "Screen background is surface (Cream). Large centered branding (Latur Tahari House) in Slab Serif. Simple standard inputs with 4px border radius. Prominent Maroon (#7A1F2B) primary button at thumb zone. A persistent table badge (e.g., 'Table 4') visible in the header once scanned."
+    },
+    { 
+      "name": "Home (Menu Browse)", 
+      "purpose": "Allow users to browse categories and add items to their table's order.", 
+      "states": { 
+        "loading": "Skeleton of horizontal chips and vertical item cards", 
+        "empty": "No items available (very rare, show a warm illustration)", 
+        "error": "Failed to load menu, retry button" 
+      }, 
+      "layout": "Header shows Table Number and quick access to Active Order. Below header: Horizontal scrollable category chips row (56pt tall row, 36pt chips, inactive: surfaceTertiary, active: Saffron Gold). Below categories: 'Popular' section (2-column layout or large feature cards), followed by vertical list for other items. Item cards: 12px radius, subtle grain, name in Slab Serif, price in bold sans (tabular), veg/non-veg dot indicator. 'Add' buttons are sharp (4px radius)."
+    },
+    { 
+      "name": "Item Detail", 
+      "purpose": "Show full dish info, spice levels, and customization before adding.", 
+      "states": { "loading": "Skeleton", "empty": "N/A", "error": "Error fetching details" }, 
+      "layout": "Large hero image at the top with gradient scrim to dark for back button readability. Below image: White/Cream modal sheet with 12px radius. Dish title (Slab Serif), description (Sans Serif), Spice level selector (pills), and Stepper (+/-) for quantity. Sticky 'Add to Cart' maroon button at the bottom."
+    },
+    { 
+      "name": "Cart (Upsell & Confirmation)", 
+      "purpose": "Review current selections, see upsells, and send round to kitchen.", 
+      "states": { "loading": "Updating cart", "empty": "Cart is empty, 'Explore Menu' button", "error": "Failed to sync" }, 
+      "layout": "List of line items with stepper controls. Below items: A horizontal scrolling 'You might also like' (Raita, Beverages) section. Sticky bottom area with Total, Taxes, and a full-width Maroon button 'Send to Kitchen'. Once sent, it clears the local cart and adds to 'Active Order / Rounds'."
+    },
+    { 
+      "name": "Active Order Tracking (Rounds)", 
+      "purpose": "Track live status of the ongoing table session across multiple rounds.", 
+      "states": { "loading": "Syncing orders", "empty": "No active orders", "error": "Failed to load status" }, 
+      "layout": "Vertical timeline or cards representing 'Round 1', 'Round 2'. Each round has a status pill (Saffron Gold for preparing, Success Green for ready). Shows list of items per round. Persistent sticky bottom button for 'Request Bill' which triggers the final checkout flow. Live status bar floats at bottom of screen if they go back to menu."
+    },
+    { 
+      "name": "Admin Dashboard", 
+      "purpose": "Manage orders, tables, and menu for restaurant staff (Tablet/Web friendly).", 
+      "states": { "loading": "Spinner", "empty": "No active table orders", "error": "Error loading queue" }, 
+      "layout": "Tablet-oriented layout. Sidebar navigation for Queue, Menu Mgmt, Tables, Sales. Main view is a kanban or dense list for live order queue, highlighting tables with new requests or 'Bill Requested' alerts in Muted Red. Structured data tables for Sales and Tables."
+    }
+  ],
+  "images": {
+    "hero_biryani": { 
+      "url": "https://images.unsplash.com/photo-1589302168068-964664d93dc0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODB8MHwxfHNlYXJjaHwxfHxtdXR0b24lMjBiaXJ5YW5pJTIwcGxhdGV8ZW58MHx8fHwxNzgzNTMzODQ1fDA&ixlib=rb-4.1.0&q=85", 
+      "alt": "Mutton Biryani Plate" 
+    },
+    "hero_tandoori": { 
+      "url": "https://images.unsplash.com/photo-1617692855027-33b14f061079?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2Mzl8MHwxfHNlYXJjaHwxfHx0YW5kb29yaSUyMGNoaWNrZW4lMjBpbmRpYW4lMjBmb29kfGVufDB8fHx8MTc4MzUzMzg0NXww&ixlib=rb-4.1.0&q=85", 
+      "alt": "Tandoori Chicken" 
+    },
+    "signage_background": { 
+      "url": "https://images.unsplash.com/photo-1763831734501-d3d0004718ce?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzV8MHwxfHNlYXJjaHwyfHxpbmRpYW4lMjByZXN0YXVyYW50JTIwc2lnbmFnZXxlbnwwfHx8fDE3ODM1MzM4NDV8MA&ixlib=rb-4.1.0&q=85", 
+      "alt": "Restaurant Signage Background" 
+    },
+    "saffron_texture": { 
+      "url": "https://images.unsplash.com/photo-1615885108069-7d5bef9a7e22?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MjJ8MHwxfHNlYXJjaHwxfHxzYWZmcm9uJTIwc3BpY2VzJTIwdGV4dHVyZXxlbnwwfHx8fDE3ODM1MzM4NDV8MA&ixlib=rb-4.1.0&q=85", 
+      "alt": "Saffron Spices Texture" 
+    }
+  },
+  "instructions_to_main_agent": [
+    "Adhere STRICTLY to the user-provided color tokens: Maroon (#7A1F2B) for brand Primary, Saffron Gold (#D4A017) for brand Secondary, Cream (#FDF6EC) for backgrounds, and Charcoal (#2B1810) for text.",
+    "Do NOT use indigo, blue, purple, or generic app colors. Keep everything within the warm/tactile color spectrum.",
+    "Typography MUST use 'Roboto Slab' for headers/display (giving that stamped/hand-painted feel) and 'Manrope' for body (ensuring legibility). No heavy display serif weights beyond 500, let size indicate hierarchy.",
+    "Cards MUST have a 12px border radius (md), and buttons MUST have sharp 4px edges (sm/xs) for contrast.",
+    "Avoid glassmorphism. This app requires a tactile, painted, organic heritage vibe. Use Skia noise/grain or textured backgrounds over solid cream blocks instead of iOS blurs.",
+    "Implement a sticky 'Send to Kitchen' button at the bottom of the Cart, overriding scroll areas.",
+    "In the Admin Dashboard, use a dense Web/Tablet friendly layout for managing the live order queue and table status.",
+    "Include a Veg/Non-Veg dot indicator icon next to menu items, a classic Indian restaurant requirement.",
+    "A floating 'Live Status Bar' should appear when the user navigates away from the active order tracking screen but has a pending 'round' in the kitchen."
+  ]
+}
