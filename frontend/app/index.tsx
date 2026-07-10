@@ -9,6 +9,7 @@ import { request, store } from "@/src/api";
 
 export default function Index() {
   const router = useRouter();
+  const [restaurant, setRestaurant] = useState<any>(null);
   const [tables, setTables] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [tableInput, setTableInput] = useState("");
@@ -16,24 +17,20 @@ export default function Index() {
   useEffect(() => {
     (async () => {
       try {
-        // Auto-resume: if we already have session + table, go straight to menu
         const [tok, tbl] = await Promise.all([store.getToken(), store.getTable()]);
-        if (tok && tbl) {
-          router.replace("/menu");
-          return;
-        }
-        const t = await request<any[]>("/tables");
+        if (tok && tbl) { router.replace("/menu"); return; }
+        const r = await request<any>("/restaurants/default");
+        setRestaurant(r);
+        await store.setRestaurant(r);
+        const t = await request<any[]>(`/tables?restaurant_id=${r.id}`);
         setTables(t);
-      } catch (e) {
-        console.warn(e);
-      } finally {
-        setLoading(false);
-      }
+      } catch (e) { console.warn(e); }
+      finally { setLoading(false); }
     })();
   }, []);
 
   const startTable = (tableId: string) => {
-    router.push({ pathname: "/otp", params: { table_id: tableId } });
+    router.push({ pathname: "/otp", params: { table_id: tableId, restaurant_id: restaurant?.id } });
   };
 
   const startByNumber = () => {
@@ -53,15 +50,12 @@ export default function Index() {
         <View style={styles.heroScrim} />
         <View style={styles.heroContent}>
           <Text style={styles.brandTag}>KONDHWA · PUNE</Text>
-          <Text style={styles.brandTitle}>Latur{"\n"}Tahari House</Text>
+          <Text style={styles.brandTitle}>{restaurant?.name || "Latur\nTahari House"}</Text>
           <Text style={styles.brandSub}>Scan the QR on your table to begin</Text>
         </View>
       </View>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.bottom}
-      >
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.bottom}>
         <View style={styles.qrCard}>
           <View style={styles.qrRow}>
             <Feather name="camera" size={18} color={colors.brand} />
@@ -79,11 +73,7 @@ export default function Index() {
               style={styles.input}
               testID="table-number-input"
             />
-            <Pressable
-              onPress={startByNumber}
-              style={({ pressed }) => [styles.goBtn, pressed && { opacity: 0.8 }]}
-              testID="table-go-btn"
-            >
+            <Pressable onPress={startByNumber} style={({ pressed }) => [styles.goBtn, pressed && { opacity: 0.8 }]} testID="table-go-btn">
               <Text style={styles.goBtnTxt}>Go</Text>
             </Pressable>
           </View>
@@ -95,12 +85,7 @@ export default function Index() {
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tablesRow}>
               {tables.map((t) => (
-                <Pressable
-                  key={t.id}
-                  onPress={() => startTable(t.id)}
-                  style={({ pressed }) => [styles.tableChip, pressed && { opacity: 0.7 }]}
-                  testID={`table-chip-${t.table_number}`}
-                >
+                <Pressable key={t.id} onPress={() => startTable(t.id)} style={({ pressed }) => [styles.tableChip, pressed && { opacity: 0.7 }]} testID={`table-chip-${t.table_number}`}>
                   <Text style={styles.tableChipNum}>{t.table_number}</Text>
                   <Text style={styles.tableChipLbl}>Table</Text>
                 </Pressable>
@@ -108,11 +93,7 @@ export default function Index() {
             </ScrollView>
           )}
 
-          <Pressable
-            onPress={() => router.push("/admin/login")}
-            style={styles.adminLink}
-            testID="admin-link"
-          >
+          <Pressable onPress={() => router.push("/admin/login")} style={styles.adminLink} testID="admin-link">
             <Feather name="shield" size={14} color={colors.muted} />
             <Text style={styles.adminLinkTxt}>Restaurant Staff Login</Text>
           </Pressable>
@@ -127,68 +108,21 @@ const styles = StyleSheet.create({
   hero: { height: 320, position: "relative" },
   heroScrim: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(43,24,16,0.55)" },
   heroContent: { flex: 1, padding: spacing.xl, justifyContent: "flex-end" },
-  brandTag: {
-    color: colors.saffron,
-    fontFamily: font.body,
-    fontSize: 11,
-    letterSpacing: 3,
-    marginBottom: spacing.sm,
-    fontWeight: "700",
-  },
-  brandTitle: {
-    color: colors.onBrand,
-    fontFamily: font.display,
-    fontSize: 42,
-    fontWeight: "800",
-    lineHeight: 46,
-    letterSpacing: 0.5,
-  },
+  brandTag: { color: colors.saffron, fontFamily: font.body, fontSize: 11, letterSpacing: 3, marginBottom: spacing.sm, fontWeight: "700" },
+  brandTitle: { color: colors.onBrand, fontFamily: font.display, fontSize: 42, fontWeight: "800", lineHeight: 46, letterSpacing: 0.5 },
   brandSub: { color: "#f2d9b0", marginTop: spacing.sm, fontFamily: font.body, fontSize: 14 },
   bottom: { flex: 1, paddingHorizontal: spacing.lg, paddingTop: spacing.lg, backgroundColor: colors.surface },
-  qrCard: {
-    backgroundColor: colors.surfaceSecondary,
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...shadow.card,
-  },
+  qrCard: { backgroundColor: colors.surfaceSecondary, borderRadius: radius.md, padding: spacing.lg, borderWidth: 1, borderColor: colors.border, ...shadow.card },
   qrRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   qrTitle: { fontFamily: font.display, fontSize: 18, color: colors.onSurface, fontWeight: "800" },
   hint: { fontFamily: font.body, fontSize: 12, color: colors.muted, marginTop: spacing.xs },
   inputRow: { flexDirection: "row", marginTop: spacing.md, gap: spacing.sm },
-  input: {
-    flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 12,
-    fontFamily: font.body,
-    color: colors.onSurface,
-    fontSize: 16,
-  },
-  goBtn: {
-    backgroundColor: colors.brand,
-    paddingHorizontal: spacing.xl,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: radius.sm,
-  },
+  input: { flex: 1, backgroundColor: colors.surface, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border, paddingHorizontal: spacing.md, paddingVertical: 12, fontFamily: font.body, color: colors.onSurface, fontSize: 16 },
+  goBtn: { backgroundColor: colors.brand, paddingHorizontal: spacing.xl, justifyContent: "center", alignItems: "center", borderRadius: radius.sm },
   goBtnTxt: { color: colors.onBrand, fontFamily: font.display, fontWeight: "800", fontSize: 15 },
   orTxt: { marginTop: spacing.lg, letterSpacing: 2, color: colors.muted, fontSize: 10, fontFamily: font.body, fontWeight: "700" },
   tablesRow: { gap: spacing.sm, paddingVertical: spacing.md },
-  tableChip: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    alignItems: "center",
-    minWidth: 68,
-  },
+  tableChip: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.borderStrong, borderRadius: radius.sm, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, alignItems: "center", minWidth: 68 },
   tableChipNum: { fontFamily: font.display, fontSize: 22, fontWeight: "800", color: colors.brand },
   tableChipLbl: { fontFamily: font.body, fontSize: 10, color: colors.muted, letterSpacing: 1 },
   adminLink: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: spacing.lg, alignSelf: "center" },

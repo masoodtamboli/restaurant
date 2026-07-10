@@ -8,8 +8,8 @@ import { request, store } from "@/src/api";
 
 export default function AdminLogin() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@latur.com");
-  const [password, setPassword] = useState("admin123");
+  const [phone, setPhone] = useState("8888888888");
+  const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -22,16 +22,16 @@ export default function AdminLogin() {
 
   const login = async () => {
     setErr(null);
+    if (pin.length < 4 || pin.length > 6) { setErr("PIN must be 4–6 digits"); return; }
     setLoading(true);
     try {
-      const r = await request<any>("/admin/login", { method: "POST", body: { email, password } });
-      await store.setAdminToken(r.token);
-      router.replace("/admin/queue");
+      const r = await request<any>("/admin/login", { method: "POST", body: { phone, pin } });
+      await store.setAdmin(r.token, r.admin);
+      if (!r.subscription) router.replace("/admin/renew");
+      else router.replace("/admin/queue");
     } catch (e: any) {
       setErr(e.message);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   return (
@@ -42,32 +42,40 @@ export default function AdminLogin() {
         </Pressable>
         <View style={styles.head}>
           <Feather name="shield" size={28} color={colors.brand} />
-          <Text style={styles.title}>Staff Login</Text>
-          <Text style={styles.sub}>Latur Tahari House · Kitchen & Floor Dashboard</Text>
+          <Text style={styles.title}>Owner Login</Text>
+          <Text style={styles.sub}>Latur Tahari House · Dashboard</Text>
         </View>
         <View style={styles.card}>
-          <Text style={styles.label}>Email</Text>
+          <Text style={styles.label}>Phone Number</Text>
+          <View style={styles.phoneRow}>
+            <View style={styles.cc}><Text style={styles.ccTxt}>+91</Text></View>
+            <TextInput
+              value={phone}
+              onChangeText={(t) => setPhone(t.replace(/[^0-9]/g, "").slice(0, 10))}
+              placeholder="98XXX XXXXX"
+              placeholderTextColor={colors.muted}
+              keyboardType="phone-pad"
+              style={[styles.input, { flex: 1 }]}
+              testID="admin-phone"
+            />
+          </View>
+          <Text style={[styles.label, { marginTop: spacing.md }]}>PIN (4–6 digits)</Text>
           <TextInput
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={styles.input}
-            testID="admin-email"
-          />
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            value={password}
-            onChangeText={setPassword}
+            value={pin}
+            onChangeText={(t) => setPin(t.replace(/[^0-9]/g, "").slice(0, 6))}
+            placeholder="••••"
+            placeholderTextColor={colors.muted}
+            keyboardType="number-pad"
             secureTextEntry
-            style={styles.input}
-            testID="admin-password"
+            style={[styles.input, styles.pinBox]}
+            testID="admin-pin"
           />
           {err && <Text style={styles.err}>{err}</Text>}
           <Pressable onPress={login} disabled={loading} style={styles.btn} testID="admin-login-btn">
             {loading ? <ActivityIndicator color={colors.onBrand} /> : <Text style={styles.btnTxt}>SIGN IN</Text>}
           </Pressable>
-          <Text style={styles.hint}>Default: admin@latur.com / admin123</Text>
+          <Text style={styles.hint}>Default: phone 8888888888 · PIN 1234</Text>
+          <Text style={styles.footNote}>Locked out? Contact the platform super admin for a PIN reset.</Text>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -81,10 +89,15 @@ const styles = StyleSheet.create({
   title: { fontFamily: font.display, fontSize: 26, fontWeight: "800", color: colors.brand },
   sub: { fontFamily: font.body, fontSize: 12, color: colors.muted, textAlign: "center" },
   card: { backgroundColor: colors.surfaceSecondary, padding: spacing.lg, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, ...shadow.card },
-  label: { fontFamily: font.body, fontSize: 12, color: colors.muted, letterSpacing: 1, fontWeight: "700", marginBottom: spacing.xs, marginTop: spacing.sm },
+  label: { fontFamily: font.body, fontSize: 12, color: colors.muted, letterSpacing: 1, fontWeight: "700", marginBottom: spacing.sm },
+  phoneRow: { flexDirection: "row", gap: spacing.sm },
+  cc: { justifyContent: "center", paddingHorizontal: 12, backgroundColor: colors.surface, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border },
+  ccTxt: { fontFamily: font.body, fontSize: 16, color: colors.onSurface, fontWeight: "700" },
   input: { backgroundColor: colors.surface, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border, paddingHorizontal: spacing.md, paddingVertical: 12, fontFamily: font.body, color: colors.onSurface, fontSize: 15 },
+  pinBox: { fontSize: 24, letterSpacing: 12, textAlign: "center", fontWeight: "800" },
   err: { color: colors.error, fontFamily: font.body, marginTop: spacing.sm },
   btn: { marginTop: spacing.lg, backgroundColor: colors.brand, paddingVertical: 15, borderRadius: radius.sm, alignItems: "center" },
   btnTxt: { color: colors.onBrand, fontFamily: font.display, fontWeight: "800", letterSpacing: 2 },
   hint: { fontFamily: font.body, color: colors.muted, fontSize: 11, textAlign: "center", marginTop: spacing.md },
+  footNote: { fontFamily: font.body, color: colors.muted, fontSize: 10, textAlign: "center", marginTop: spacing.xs, fontStyle: "italic" },
 });

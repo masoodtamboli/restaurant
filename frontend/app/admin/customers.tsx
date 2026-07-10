@@ -15,9 +15,13 @@ export default function AdminCustomers() {
   const load = useCallback(async () => {
     const tok = await store.getAdminToken();
     if (!tok) { router.replace("/admin/login"); return; }
-    const c = await request<any[]>("/admin/customers", { token: tok });
-    setCustomers(c);
-    setLoading(false);
+    try {
+      const c = await request<any[]>("/admin/customers", { token: tok });
+      setCustomers(c);
+    } catch (e: any) {
+      if (e.status === 402) router.replace("/admin/renew");
+      if (e.status === 401) router.replace("/admin/login");
+    } finally { setLoading(false); }
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));

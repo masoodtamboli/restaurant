@@ -137,6 +137,14 @@ export default function Tracking() {
       </ScrollView>
 
       <SafeAreaView edges={["bottom"]} style={styles.footer}>
+        <Pressable
+          onPress={() => router.push("/call-staff")}
+          style={styles.callBtn}
+          testID="call-staff-tracking"
+        >
+          <Feather name="bell" size={14} color={colors.brand} />
+          <Text style={styles.callTxt}>CALL STAFF</Text>
+        </Pressable>
         <View style={styles.footerRow}>
           <Pressable
             onPress={() => router.push("/menu")}
@@ -198,4 +206,6 @@ const styles = StyleSheet.create({
   addMoreTxt: { color: colors.brand, fontFamily: font.display, fontWeight: "800", letterSpacing: 2, fontSize: 13 },
   billBtn: { flex: 1.4, paddingVertical: 14, borderRadius: radius.sm, alignItems: "center", justifyContent: "center", backgroundColor: colors.brand },
   billBtnTxt: { color: colors.onBrand, fontFamily: font.display, fontWeight: "800", letterSpacing: 2, fontSize: 13 },
+  callBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, backgroundColor: colors.surfaceTertiary, paddingVertical: 10, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.saffron, marginBottom: spacing.sm },
+  callTxt: { color: colors.brand, fontFamily: font.display, fontWeight: "800", letterSpacing: 2, fontSize: 12 },
 });

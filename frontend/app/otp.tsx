@@ -7,7 +7,7 @@ import { colors, spacing, radius, font, shadow } from "@/src/theme";
 import { request, store } from "@/src/api";
 
 export default function OtpScreen() {
-  const { table_id } = useLocalSearchParams<{ table_id: string }>();
+  const { table_id, restaurant_id } = useLocalSearchParams<{ table_id: string; restaurant_id: string }>();
   const router = useRouter();
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
@@ -60,7 +60,7 @@ export default function OtpScreen() {
     try {
       const r = await request<any>("/auth/verify-otp", {
         method: "POST",
-        body: { phone, otp, table_id, name: name || undefined },
+        body: { phone, otp, table_id, restaurant_id, name: name || undefined },
       });
       await store.setSession(r.token, r.user, r.table, r.table_session_id);
       router.replace("/menu");
@@ -121,14 +121,14 @@ export default function OtpScreen() {
                 style={({ pressed }) => [styles.primaryBtn, pressed && { opacity: 0.85 }]}
                 testID="send-otp-btn"
               >
-                {loading ? <ActivityIndicator color={colors.onBrand} /> : <Text style={styles.primaryTxt}>Send OTP</Text>}
+                {loading ? <ActivityIndicator color={colors.onBrand} /> : <Text style={styles.primaryTxt}>Send WhatsApp OTP</Text>}
               </Pressable>
               <Text style={styles.footNote}>By continuing you agree to session-based table binding for ordering.</Text>
             </>
           ) : (
             <>
               <Text style={styles.label}>Enter the 6-digit code</Text>
-              <Text style={styles.hint}>Sent to +91 {phone}. Dev mode: use <Text style={{ fontWeight: "800", color: colors.brand }}>123456</Text></Text>
+              <Text style={styles.hint}>WhatsApp&apos;d to +91 {phone}. Dev mode: use <Text style={{ fontWeight: "800", color: colors.brand }}>123456</Text></Text>
               <TextInput
                 value={otp}
                 onChangeText={(t) => setOtp(t.replace(/[^0-9]/g, "").slice(0, 6))}

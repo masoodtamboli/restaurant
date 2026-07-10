@@ -24,19 +24,24 @@ export async function request<T = any>(path: string, opts: ReqOpts = {}): Promis
     try {
       msg = JSON.parse(text).detail || text;
     } catch {}
-    throw new Error(msg || `Request failed: ${res.status}`);
+    const err: any = new Error(msg || `Request failed: ${res.status}`);
+    err.status = res.status;
+    throw err;
   }
   if (res.status === 204) return undefined as any;
   return res.json();
 }
 
-// Storage keys
 const K = {
   token: "lth_token",
   user: "lth_user",
   table: "lth_table",
+  restaurant: "lth_restaurant",
   cart: "lth_cart",
   adminToken: "lth_admin_token",
+  admin: "lth_admin",
+  superAdminToken: "lth_sa_token",
+  superAdmin: "lth_sa",
 };
 
 export const store = {
@@ -47,39 +52,26 @@ export const store = {
       [K.table, JSON.stringify({ ...table, table_session_id: tableSessionId })],
     ]);
   },
-  async getToken() {
-    return AsyncStorage.getItem(K.token);
+  async setRestaurant(r: any) { await AsyncStorage.setItem(K.restaurant, JSON.stringify(r)); },
+  async getRestaurant() { const v = await AsyncStorage.getItem(K.restaurant); return v ? JSON.parse(v) : null; },
+  async getToken() { return AsyncStorage.getItem(K.token); },
+  async getUser() { const v = await AsyncStorage.getItem(K.user); return v ? JSON.parse(v) : null; },
+  async getTable() { const v = await AsyncStorage.getItem(K.table); return v ? JSON.parse(v) : null; },
+  async clearSession() { await AsyncStorage.multiRemove([K.token, K.user, K.table, K.cart]); },
+  async getCart(): Promise<CartLine[]> { const v = await AsyncStorage.getItem(K.cart); return v ? JSON.parse(v) : []; },
+  async setCart(cart: CartLine[]) { await AsyncStorage.setItem(K.cart, JSON.stringify(cart)); },
+  async clearCart() { await AsyncStorage.removeItem(K.cart); },
+  async setAdmin(token: string, admin: any) {
+    await AsyncStorage.multiSet([[K.adminToken, token], [K.admin, JSON.stringify(admin)]]);
   },
-  async getUser() {
-    const v = await AsyncStorage.getItem(K.user);
-    return v ? JSON.parse(v) : null;
+  async getAdminToken() { return AsyncStorage.getItem(K.adminToken); },
+  async getAdmin() { const v = await AsyncStorage.getItem(K.admin); return v ? JSON.parse(v) : null; },
+  async clearAdmin() { await AsyncStorage.multiRemove([K.adminToken, K.admin]); },
+  async setSuperAdmin(token: string, sa: any) {
+    await AsyncStorage.multiSet([[K.superAdminToken, token], [K.superAdmin, JSON.stringify(sa)]]);
   },
-  async getTable() {
-    const v = await AsyncStorage.getItem(K.table);
-    return v ? JSON.parse(v) : null;
-  },
-  async clearSession() {
-    await AsyncStorage.multiRemove([K.token, K.user, K.table, K.cart]);
-  },
-  async getCart(): Promise<CartLine[]> {
-    const v = await AsyncStorage.getItem(K.cart);
-    return v ? JSON.parse(v) : [];
-  },
-  async setCart(cart: CartLine[]) {
-    await AsyncStorage.setItem(K.cart, JSON.stringify(cart));
-  },
-  async clearCart() {
-    await AsyncStorage.removeItem(K.cart);
-  },
-  async setAdminToken(t: string) {
-    await AsyncStorage.setItem(K.adminToken, t);
-  },
-  async getAdminToken() {
-    return AsyncStorage.getItem(K.adminToken);
-  },
-  async clearAdminToken() {
-    await AsyncStorage.removeItem(K.adminToken);
-  },
+  async getSuperAdminToken() { return AsyncStorage.getItem(K.superAdminToken); },
+  async clearSuperAdmin() { await AsyncStorage.multiRemove([K.superAdminToken, K.superAdmin]); },
 };
 
 export type CartLine = {

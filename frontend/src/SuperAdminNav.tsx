@@ -6,34 +6,29 @@ import { colors, spacing, radius, font } from "@/src/theme";
 import { store } from "@/src/api";
 
 const TABS = [
-  { key: "queue", label: "Queue", icon: "list", path: "/admin/queue" },
-  { key: "staff-calls", label: "Calls", icon: "bell", path: "/admin/staff-calls" },
-  { key: "menu", label: "Menu", icon: "book-open", path: "/admin/menu" },
-  { key: "tables", label: "Tables", icon: "grid", path: "/admin/tables" },
-  { key: "promos", label: "Promos", icon: "send", path: "/admin/promos" },
-  { key: "sales", label: "Sales", icon: "trending-up", path: "/admin/sales" },
-  { key: "customers", label: "Customers", icon: "users", path: "/admin/customers" },
-  { key: "subscription", label: "Plan", icon: "credit-card", path: "/admin/subscription" },
+  { key: "restaurants", label: "Restaurants", icon: "home", path: "/super-admin/restaurants" },
+  { key: "subscriptions", label: "Subscriptions", icon: "credit-card", path: "/super-admin/subscriptions" },
+  { key: "plans", label: "Plans", icon: "package", path: "/super-admin/plans" },
 ];
 
-export default function AdminNav({ title, subtitle }: { title: string; subtitle?: string }) {
+export default function SuperAdminNav({ title, subtitle }: { title: string; subtitle?: string }) {
   const router = useRouter();
   const pathname = usePathname();
 
   const logout = async () => {
-    await store.clearAdmin();
-    router.replace("/admin/login");
+    await store.clearSuperAdmin();
+    router.replace("/super-admin/login");
   };
 
   return (
     <View style={styles.wrap}>
       <View style={styles.top}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.brand}>LATUR · ADMIN</Text>
+          <Text style={styles.brand}>PLATFORM · SUPER ADMIN</Text>
           <Text style={styles.title}>{title}</Text>
           {subtitle && <Text style={styles.sub}>{subtitle}</Text>}
         </View>
-        <Pressable onPress={logout} style={styles.logout} testID="admin-logout">
+        <Pressable onPress={logout} style={styles.logout} testID="sa-logout">
           <Feather name="log-out" size={16} color={colors.onBrand} />
         </Pressable>
       </View>
@@ -45,7 +40,7 @@ export default function AdminNav({ title, subtitle }: { title: string; subtitle?
               key={t.key}
               onPress={() => router.replace(t.path as any)}
               style={[styles.tab, active && styles.tabActive]}
-              testID={`admin-tab-${t.key}`}
+              testID={`sa-tab-${t.key}`}
             >
               <Feather name={t.icon as any} size={14} color={active ? colors.onSaffron : colors.onBrand} />
               <Text style={[styles.tabTxt, active && styles.tabTxtActive]}>{t.label.toUpperCase()}</Text>
@@ -58,14 +53,14 @@ export default function AdminNav({ title, subtitle }: { title: string; subtitle?
 }
 
 const styles = StyleSheet.create({
-  wrap: { backgroundColor: colors.brand, paddingBottom: spacing.sm },
+  wrap: { backgroundColor: colors.surfaceInverse, paddingBottom: spacing.sm },
   top: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: spacing.lg },
   brand: { fontFamily: font.body, fontSize: 10, letterSpacing: 3, color: colors.saffron, fontWeight: "800" },
   title: { fontFamily: font.display, fontSize: 22, fontWeight: "800", color: colors.onBrand, marginTop: 2 },
-  sub: { fontFamily: font.body, fontSize: 11, color: "#e5d3aa", marginTop: 2 },
-  logout: { padding: 10, backgroundColor: "rgba(0,0,0,0.3)", borderRadius: radius.sm },
+  sub: { fontFamily: font.body, fontSize: 11, color: "#c9b58f", marginTop: 2 },
+  logout: { padding: 10, backgroundColor: "rgba(255,255,255,0.15)", borderRadius: radius.sm },
   tabsRow: { paddingHorizontal: spacing.md, gap: spacing.sm },
-  tab: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: spacing.md, paddingVertical: 8, backgroundColor: "rgba(0,0,0,0.25)", borderRadius: radius.pill, flexShrink: 0, height: 36 },
+  tab: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: spacing.md, paddingVertical: 8, backgroundColor: "rgba(255,255,255,0.15)", borderRadius: radius.pill, flexShrink: 0, height: 36 },
   tabActive: { backgroundColor: colors.saffron },
   tabTxt: { color: colors.onBrand, fontFamily: font.body, fontSize: 11, fontWeight: "800", letterSpacing: 1 },
   tabTxtActive: { color: colors.onSaffron },

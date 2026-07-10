@@ -13,8 +13,13 @@ export default function AdminSales() {
   const load = useCallback(async () => {
     const tok = await store.getAdminToken();
     if (!tok) { router.replace("/admin/login"); return; }
-    const s = await request<any>("/admin/stats/today", { token: tok });
-    setStats(s);
+    try {
+      const s = await request<any>("/admin/stats/today", { token: tok });
+      setStats(s);
+    } catch (e: any) {
+      if (e.status === 402) router.replace("/admin/renew");
+      if (e.status === 401) router.replace("/admin/login");
+    }
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));

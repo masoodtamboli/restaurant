@@ -18,9 +18,13 @@ export default function AdminTables() {
   const load = useCallback(async () => {
     const tok = await store.getAdminToken();
     if (!tok) { router.replace("/admin/login"); return; }
-    const t = await request<any[]>("/admin/tables", { token: tok });
-    setTables(t);
-    setLoading(false);
+    try {
+      const t = await request<any[]>("/admin/tables", { token: tok });
+      setTables(t);
+    } catch (e: any) {
+      if (e.status === 402) router.replace("/admin/renew");
+      if (e.status === 401) router.replace("/admin/login");
+    } finally { setLoading(false); }
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));

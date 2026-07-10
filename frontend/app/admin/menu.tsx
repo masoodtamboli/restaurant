@@ -16,9 +16,13 @@ export default function AdminMenu() {
   const load = useCallback(async () => {
     const tok = await store.getAdminToken();
     if (!tok) { router.replace("/admin/login"); return; }
-    const p = await request<any[]>("/admin/products", { token: tok });
-    setProducts(p);
-    setLoading(false);
+    try {
+      const p = await request<any[]>("/admin/products", { token: tok });
+      setProducts(p);
+    } catch (e: any) {
+      if (e.status === 402) router.replace("/admin/renew");
+      if (e.status === 401) router.replace("/admin/login");
+    } finally { setLoading(false); }
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));

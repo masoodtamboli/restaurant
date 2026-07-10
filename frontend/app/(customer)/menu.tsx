@@ -18,7 +18,8 @@ export default function Menu() {
   const [activeSession, setActiveSession] = useState<any>(null);
 
   const load = useCallback(async () => {
-    const [menu, tbl] = await Promise.all([request("/menu"), store.getTable()]);
+    const [tbl, restaurant] = await Promise.all([store.getTable(), store.getRestaurant()]);
+    const menu = await request(`/menu?restaurant_id=${restaurant?.id || tbl?.restaurant_id}`);
     setData(menu);
     setTable(tbl);
     if (tbl?.id) {
@@ -163,6 +164,18 @@ export default function Menu() {
         ListEmptyComponent={<Text style={{ textAlign: "center", color: colors.muted, marginTop: spacing.xl }}>No items in this category.</Text>}
       />
 
+      {/* Call Staff button */}
+      {table && (
+        <Pressable
+          onPress={() => router.push("/call-staff")}
+          style={styles.callStaffFab}
+          testID="call-staff-fab"
+        >
+          <Feather name="bell" size={16} color={colors.onSaffron} />
+          <Text style={styles.callStaffTxt}>CALL STAFF</Text>
+        </Pressable>
+      )}
+
       {/* Live status bar (if there's an active round) */}
       {activeOrdersCount > 0 && (
         <Pressable
@@ -298,4 +311,6 @@ const styles = StyleSheet.create({
   },
   liveDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.saffron },
   liveTxt: { flex: 1, color: colors.onBrand, fontFamily: font.body, fontWeight: "700", fontSize: 13, letterSpacing: 0.5 },
+  callStaffFab: { position: "absolute", right: spacing.lg, top: 120, flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: colors.saffron, paddingHorizontal: 12, paddingVertical: 8, borderRadius: radius.pill, ...shadow.strong },
+  callStaffTxt: { color: colors.onSaffron, fontFamily: font.display, fontWeight: "800", fontSize: 11, letterSpacing: 1 },
 });
