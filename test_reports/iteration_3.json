@@ -1,0 +1,34 @@
+{
+  "summary": "RETEST v2 fixes — all 3 fixes VERIFIED on frontend (backend not retested; iteration_2 was 33/33). (1) OTP flow now completes end-to-end: /→tap Table 5→ /otp?table_id=…&restaurant_id=…→phone 9876543212→Send WhatsApp OTP→OTP field appears→123456→Verify & Continue→lands on /menu. No '[object Object]' seen. (2) src/api.ts now correctly stringifies FastAPI 422 detail arrays via `parsed.detail.map(d=>d.msg||JSON.stringify(d)).join('; ')`. (3) testIDs added: admin-phone-input/admin-pin-input work (8888888888/1234 → /admin/queue), sa-phone-input/sa-password-input work (9999999999/super123 → /super-admin/restaurants). E2E sweep verified: Admin queue shows 'STAFF CALL' banner + Table 5 open session; /admin/subscription renders status card ('3 Month · ACTIVE, 89 days remaining' — 3 Month is DB residue from prior tests as documented in iter_2, NOT a regression), 3 available plan cards, tapping 6 Month plan reveals QR + UPLOAD SCREENSHOT + UTR field + SUBMIT area; /admin/promos lists 3 templates (Happy Hour, Weekend Special, Ramzan Iftar) + history; picking a template opens 'FILL IN VARIABLES' form with variable inputs (discount_percent…); /admin/staff-calls shows 1 open call (WATER · Table 1 with 'extra glass' note) + DONE button; /super-admin/restaurants shows Latur Tahari House with SUBBED badge, 3 orders, ₹1300 revenue, RESET PIN button; /super-admin/plans shows 4 plans (3 seed + 1 TEST leftover) with QR thumbnails + EDIT (opens 'Edit Plan' modal with SAVE + auto-QR hint) + HIDE/SHOW toggles; /super-admin/subscriptions PENDING·1 shows the admin-created pending request, tapping APPROVE succeeded → PENDING·0 and the request now appears under ALL·4 with ACTIVE badge. Backend regression suite untouched.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "styles.shadow (theme)", "issue": "Console warnings on every screen: 'shadow* style props are deprecated. Use boxShadow.' Non-blocking on web preview but should migrate for RN new architecture / Web parity. Reference: /app/frontend/src/theme.ts (shadow.card)."}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_latur_backend.py (from iter_2, 33/33 — not rerun)",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Optional cosmetic) Migrate `shadow.card` in src/theme.ts from shadowOffset/shadowOpacity/shadowRadius to `boxShadow` string to silence deprecation warnings on Expo web. RN mobile still accepts old props so mobile build is unaffected.",
+    "(Optional cosmetic) The Latur Tahari House seeded subscription is currently '3 Month · ACTIVE' rather than the '1 Month · ACTIVE' the review request expected. This is DB residue from prior iteration tests (activate_subscription() was called on longer plans); code is correct. If a clean-slate seed is desired for demos, wipe subscriptions on boot when env FLAG_RESEED=1 is set.",
+    "(Nice-to-have) After super-admin approves a subscription, the ALL tab shows the approved item with badge 'ACTIVE' but no confirmation toast is shown to the user. Minor UX polish."
+  ],
+  "critical_code_review_comments": [
+    "otp.tsx L43 fix is correct — restaurant_id is destructured from useLocalSearchParams and passed in the body; verify-otp on L63 also passes it. Round-trip complete.",
+    "api.ts L21-36 error handler now safely handles: FastAPI 422 array, plain string detail, unknown-shape detail (JSON.stringify fallback), and preserves err.status. Clean.",
+    "admin/login.tsx and super-admin/login.tsx both have proper testID coverage on inputs and buttons.",
+    "src/api.ts L3 still falls back to '' when EXPO_PUBLIC_BACKEND_URL is missing — would silently break; consider throwing at boot (carried from iter_2)."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (33/33 from iter_2, not rerun)", "frontend": "100% on the 3 targeted fixes + all critical E2E screens loaded and interactive"},
+  "seed_data_creation": "None. Approved 1 pending subscription that admin UI created in iter_2 (its status is now ACTIVE in super-admin ALL tab). No destructive changes.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend regression suite /app/backend/tests/test_latur_backend.py (33/33 in iter_2) untouched. All 3 v2 frontend fixes verified working. Remaining minor items: (a) Latur seeded active plan is '3 Month' not '1 Month' (DB residue, not code); (b) shadow* deprecation warnings on Expo web; (c) no confirmation toast after super-admin APPROVE (functional but silent). Deep customer sub-flows past /menu (item detail → cart → send-to-kitchen → tracking → CALL STAFF reason submit → confirmation → request bill → admin clean-table modal preview) were NOT re-exercised via UI in this iteration — they were fully covered by backend suite + would need a full customer session run again — but the customer OTP-to-menu path (previously blocked) is now unblocked so main agent can self-verify with confidence. Same for admin promos BROADCAST success toast (template & variable form rendered; broadcast API is passing at backend level per iter_2).",
+  "rca_of_issue": "N/A — this iteration verified the fixes from iter_2. All previously reported bugs (otp restaurant_id 422, [object Object] error, missing login testIDs) are resolved."
+}

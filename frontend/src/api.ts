@@ -22,7 +22,14 @@ export async function request<T = any>(path: string, opts: ReqOpts = {}): Promis
     const text = await res.text();
     let msg = text;
     try {
-      msg = JSON.parse(text).detail || text;
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed.detail)) {
+        msg = parsed.detail.map((d: any) => d.msg || JSON.stringify(d)).join("; ");
+      } else if (typeof parsed.detail === "string") {
+        msg = parsed.detail;
+      } else if (parsed.detail) {
+        msg = JSON.stringify(parsed.detail);
+      }
     } catch {}
     const err: any = new Error(msg || `Request failed: ${res.status}`);
     err.status = res.status;

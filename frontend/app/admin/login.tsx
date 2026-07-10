@@ -56,7 +56,7 @@ export default function AdminLogin() {
               placeholderTextColor={colors.muted}
               keyboardType="phone-pad"
               style={[styles.input, { flex: 1 }]}
-              testID="admin-phone"
+              testID="admin-phone-input"
             />
           </View>
           <Text style={[styles.label, { marginTop: spacing.md }]}>PIN (4–6 digits)</Text>
@@ -68,7 +68,7 @@ export default function AdminLogin() {
             keyboardType="number-pad"
             secureTextEntry
             style={[styles.input, styles.pinBox]}
-            testID="admin-pin"
+            testID="admin-pin-input"
           />
           {err && <Text style={styles.err}>{err}</Text>}
           <Pressable onPress={login} disabled={loading} style={styles.btn} testID="admin-login-btn">

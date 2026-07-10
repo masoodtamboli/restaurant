@@ -45,7 +45,7 @@ export default function SuperAdminLogin() {
             onChangeText={(t) => setPhone(t.replace(/[^0-9]/g, "").slice(0, 10))}
             keyboardType="phone-pad"
             style={styles.input}
-            testID="sa-phone"
+            testID="sa-phone-input"
           />
           <Text style={[styles.label, { marginTop: spacing.md }]}>Password</Text>
           <TextInput
@@ -53,7 +53,7 @@ export default function SuperAdminLogin() {
             onChangeText={setPassword}
             secureTextEntry
             style={styles.input}
-            testID="sa-password"
+            testID="sa-password-input"
           />
           {err && <Text style={styles.err}>{err}</Text>}
           <Pressable onPress={login} disabled={loading} style={styles.btn} testID="sa-login-btn">

@@ -40,7 +40,7 @@ export default function OtpScreen() {
     }
     setLoading(true);
     try {
-      await request("/auth/send-otp", { method: "POST", body: { phone, name } });
+      await request("/auth/send-otp", { method: "POST", body: { phone, name, restaurant_id } });
       setStep("otp");
       setCooldown(30);
     } catch (e: any) {
